@@ -972,7 +972,7 @@ namespace retracesoftware {
         .tp_new = (newfunc)StableSet::create,
     };
 
-    static PyTypeObject * base_type(PyObject * base) {
+    PyTypeObject * StableSet::base_type(PyObject * base) {
         return PyObject_TypeCheck(base, &StableSet_Type) 
             ? &StableSet_Type
             : &StableFrozenSet_Type;
@@ -1010,7 +1010,7 @@ static PyModuleDef moduledef = {
     module_methods
 };
 
-PyMODINIT_FUNC PyInit_retracesoftware(void) {
+PyMODINIT_FUNC PyInit_stableset(void) {
     PyObject* module;
 
 // Create the module
