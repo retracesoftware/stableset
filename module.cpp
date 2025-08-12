@@ -1028,6 +1028,13 @@ PyMODINIT_FUNC PyInit_stableset(void) {
 
     for (int i = 0; types[i]; i++) {
         PyType_Ready(types[i]);
+
+        const char *last_dot = strrchr(types[i]->tp_name, '.');
+
+        // If a dot is found, the substring starts after the dot
+        const char *name = (last_dot != NULL) ? (last_dot + 1) : types[i]->tp_name;
+
+        PyModule_AddObject(module, name, (PyObject *)types[i]);
     }
 
     return module;
