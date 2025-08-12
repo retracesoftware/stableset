@@ -1,0 +1,7 @@
+[project]
+name = "retracesoftware.stableset"
+version = "0.1.0"
+
+[build-system]
+requires = ["meson-python>=0.15.0"]
+build-backend = "mesonpy"
