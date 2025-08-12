@@ -1,6 +1,7 @@
 [project]
 name = "retracesoftware.stableset"
 version = "0.1.0"
+license = {text = "Apache-2.0"}
 
 [build-system]
 requires = ["meson-python>=0.15.0"]
