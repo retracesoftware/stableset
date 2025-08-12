@@ -1,0 +1,106 @@
+# .github/workflows/wheels.yml
+name: Build wheels
+
+on:
+  push:
+    tags:
+      - "v*.*.*"        # tag to trigger build+publish
+  workflow_dispatch:     # manual run
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14, windows-2022]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # (Optional) keep meson-python's temp/build stuff tidy
+      - name: Set meson-python build dir
+        shell: bash
+        run: echo "MESONPY_BUILD_DIR=.build" >> $GITHUB_ENV
+
+      - name: Set up runner Python (driver only)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cibuildwheel
+        run: python -m pip install --upgrade pip cibuildwheel
+
+      - name: Build wheels
+        env:
+          # CPython versions to build
+          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
+
+          # macOS: produce universal2 wheels (arm64+x86_64)
+          CIBW_ARCHS_MACOS: "universal2"
+
+          # Linux: x86_64 + aarch64 (aarch64 via QEMU emulation)
+          CIBW_ARCHS_LINUX: "x86_64 aarch64"
+          CIBW_QEMU: "1"
+
+          # Windows: default (amd64); add "ARM64" only if you have toolchain support
+          # CIBW_ARCHS_WINDOWS: "AMD64"
+
+          # Run a simple import test for each built wheel
+          CIBW_TEST_COMMAND: "python -c \"import retracesoftware.stableset; print('ok')\""
+
+          # Pass env to build backend (meson-python)
+          CIBW_ENVIRONMENT: >
+            MESONPY_BUILD_DIR=.build
+            MESON_ARGS=-Dbuildtype=release
+        run: python -m cibuildwheel --output-dir wheelhouse
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: wheelhouse/*.whl
+
+  sdist:
+    name: Build sdist
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade build
+      - run: python -m build --sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+
+  publish:
+    name: Publish to PyPI
+    needs: [build_wheels, sdist]
+    if: startsWith(github.ref, 'refs/tags/v')    # only on version tags
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-ubuntu-22.04
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-macos-14
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels-windows-2022
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@v1.10.3
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
