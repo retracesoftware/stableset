@@ -34,26 +34,25 @@ jobs:
 
       - name: Build wheels
         env:
-          # CPython versions to build
           CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
 
-          # macOS: produce universal2 wheels (arm64+x86_64)
-          CIBW_ARCHS_MACOS: "x86_64 arm64"
+          # macOS: build two separate wheels (arm64 and x86_64), NOT universal2
+          CIBW_ARCHS_MACOS: "arm64 x86_64"
 
-          # Linux: x86_64 + aarch64 (aarch64 via QEMU emulation)
+          # Ensure meson-python doesn't inherit a combined ARCHFLAGS
+          CIBW_ENVIRONMENT_MACOS: "ARCHFLAGS="
+
+          # Linux + Windows (as before)
           CIBW_ARCHS_LINUX: "x86_64 aarch64"
           CIBW_QEMU: "1"
 
-          # Windows: default (amd64); add "ARM64" only if you have toolchain support
-          # CIBW_ARCHS_WINDOWS: "AMD64"
-
-          # Run a simple import test for each built wheel
           CIBW_TEST_COMMAND: "python -c \"import retracesoftware.stableset; print('ok')\""
 
-          # Pass env to build backend (meson-python)
+          # meson-python niceties
           CIBW_ENVIRONMENT: >
             MESONPY_BUILD_DIR=.build
             MESON_ARGS=-Dbuildtype=release
+
         run: python -m cibuildwheel --output-dir wheelhouse
 
       - name: Upload wheels
