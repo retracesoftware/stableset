@@ -4,9 +4,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_macos_wheel:
-    name: Build macOS wheel
-    runs-on: macos-latest
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +30,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-wheel
+          name: wheels-${{ matrix.os }}
           path: dist/*.whl
           retention-days: 30
