@@ -22,7 +22,8 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse --platform macos
         env:
-          CIBW_PYTHON: "3.11"
+          CIBW_PYTHON: "cp311-*"
+          CIBW_SKIP: "cp38-* cp39-* cp310-* cp312-* cp313-* cp314-*"
           CIBW_BEFORE_BUILD: |
             python -m pip install --upgrade pip setuptools wheel
             python -m pip install meson-python
