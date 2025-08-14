@@ -28,8 +28,8 @@ jobs:
           # (Optional) Skip other versions explicitly, though CIBW_BUILD already constrains this
           CIBW_SKIP: "cp38-* cp39-* cp310-* cp312-* cp313-* cp314-*"
 
-          # Build both Intel + Apple Silicon + universal2 wheels
-          CIBW_ARCHS_MACOS: "x86_64 arm64 universal2"
+          # Build both Intel + Apple Silicon wheels (separate, not universal2)
+          CIBW_ARCHS_MACOS: "x86_64 arm64"
 
           # Per-wheel build setup
           CIBW_BEFORE_BUILD: |
