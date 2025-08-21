@@ -1,6 +1,6 @@
 [project]
 name = "retracesoftware.stableset"
-version = "0.1.2"
+version = "0.1.3"
 description = "C-Extension type for python that provides a set implementation that is stable on iteration"
 readme = "README.md"
 license = {text = "Apache-2.0"}
